@@ -65,7 +65,23 @@ export default function YouTubePlayer({ videoId }: YouTubePlayerProps) {
   }, [videoId]);
 
   const initializePlayer = () => {
-    if (!containerRef.current || playerRef.current) return;
+    if (!containerRef.current) return;
+
+    // Check if container has dimensions before initializing
+    const rect = containerRef.current.getBoundingClientRect();
+    if (rect.height === 0 || rect.width === 0) {
+      // Container not yet laid out - retry after layout settles
+      requestAnimationFrame(() => {
+        requestAnimationFrame(initializePlayer);
+      });
+      return;
+    }
+
+    // Destroy existing player if it exists
+    if (playerRef.current && playerRef.current.destroy) {
+      playerRef.current.destroy();
+      playerRef.current = null;
+    }
 
     playerRef.current = new window.YT.Player(containerRef.current, {
       videoId: videoId,
@@ -79,6 +95,8 @@ export default function YouTubePlayer({ videoId }: YouTubePlayerProps) {
         showinfo: 0,
         fs: 1,
         playsinline: 1,
+        iv_load_policy: 3, // Hide video annotations
+        // disablekb: 1, // Disable keyboard controls to prevent YouTube logo from showing
       },
       events: {
         onReady: onPlayerReady,
@@ -220,12 +238,14 @@ export default function YouTubePlayer({ videoId }: YouTubePlayerProps) {
   };
 
   return (
-    <div className="w-full bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+    <div
+      className={`h-full w-full bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 flex flex-col`}
+    >
       {/* Video Container */}
       <div
         ref={containerRef}
-        className="w-full aspect-video bg-black"
-        style={{ maxHeight: "400px" }}
+        className="w-full flex-1 bg-black"
+        style={{ minHeight: "200px" }}
       />
 
       {/* Custom Controls */}

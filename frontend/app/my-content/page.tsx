@@ -32,15 +32,6 @@ export default async function MyContentPage() {
     error = "Failed to load your transcripts";
   }
 
-  // const formatDate = (dateString: string) => {
-  //   const date = new Date(dateString);
-  //   return date.toLocaleDateString("en-US", {
-  //     year: "numeric",
-  //     month: "short",
-  //     day: "numeric",
-  //   });
-  // };
-
   const formattedTranscripts = transcripts.map((transcript) => ({
     ...transcript,
     formattedDate: new Date(transcript.created_at).toLocaleDateString("en-US", {

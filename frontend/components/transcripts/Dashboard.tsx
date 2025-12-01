@@ -1,10 +1,16 @@
 "use client";
-
+import { useState } from "react";
 import TranscriptDisplay from "./transcriptDisplay/TranscriptDisplay";
 import ChatInterface from "./aiAssistant/ChatInterface";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import type { Database } from "@/types/database.types";
-import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
+import {
+  ChevronDownIcon,
+  ChevronUpIcon,
+  ChevronRightIcon,
+  ChevronLeftIcon,
+} from "lucide-react";
+import YouTubePlayer from "../ytPlayer/YouTubePlayer";
 
 type Transcript = Database["public"]["Tables"]["transcripts"]["Row"];
 
@@ -13,30 +19,91 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ transcript }: DashboardProps) {
+  const [currentTab, setCurrentTab] = useState<"video" | "transcript" | "ai">(
+    "video"
+  );
+
+  const isYouTube = transcript?.source_type === "youtube";
   return (
     <>
       {/* Small */}
-      <div className="lg:hidden h-full">
-        <PanelGroup direction="vertical">
-          <Panel defaultSize={50} maxSize={95} className="h-full">
-            <TranscriptDisplay transcript={transcript} />
-          </Panel>
-          <ChevronUpIcon className="w-6 h-6 mx-auto text-gray-200" />
-          <PanelResizeHandle className="h-2 bg-gray-200 cursor-row-resize z-10" />
-          <ChevronDownIcon className="w-6 h-6 mx-auto text-gray-200" />
-          <Panel defaultSize={50} maxSize={95} className="">
+      <div className="lg:hidden h-full max-h-screen flex flex-col">
+        <div className="flex-1 overflow-hidden pb-10">
+          {/* Video Tab Panel - Always mounted */}
+          <div className={currentTab === "video" ? "h-full" : "hidden"}>
+            <YouTubePlayer videoId={transcript?.audio_url || ""} />
+          </div>
+
+          {/* Transcript Tab Panel - Always mounted */}
+          <div className={currentTab === "transcript" ? "h-full" : "hidden"}>
+            <PanelGroup direction="vertical">
+              <Panel defaultSize={34} maxSize={95} className="h-full">
+                <TranscriptDisplay transcript={transcript} />
+              </Panel>
+              <div className="relative h-0">
+                <ChevronUpIcon className="w-6 h-6 text-gray-300 absolute left-1/2 -translate-x-1/2 -top-5 pointer-events-none" />
+              </div>
+              <PanelResizeHandle className="h-2 bg-gray-200 cursor-row-resize z-10" />
+              <div className="relative h-0">
+                <ChevronDownIcon className="w-6 h-6 text-gray-300 absolute left-1/2 -translate-x-1/2 -bottom-5 pointer-events-none" />
+              </div>
+              <Panel defaultSize={33} maxSize={95}>
+                <ChatInterface transcript={transcript} />
+              </Panel>
+            </PanelGroup>
+          </div>
+
+          {/* AI Tab Panel - Always mounted (if needed in future) */}
+          <div className={currentTab === "ai" ? "h-full" : "hidden"}>
             <ChatInterface transcript={transcript} />
-          </Panel>
-        </PanelGroup>
+          </div>
+        </div>
+        <div className="grid bottom-0 fixed h-10 grid-cols-2 w-full">
+          <button
+            onClick={() => setCurrentTab("video")}
+            className="border-t border-r bg-white dark:bg-gray-800 flex flex-col items-center justify-center"
+          >
+            <span>Video</span>
+          </button>
+          <button
+            onClick={() => setCurrentTab("transcript")}
+            className="border-t bg-white dark:bg-gray-800 flex flex-col items-center justify-center"
+          >
+            <span>Transcript</span>
+          </button>
+        </div>
       </div>
       {/* Large */}
       <div className="hidden h-full lg:block">
         <PanelGroup direction="horizontal">
-          <Panel defaultSize={65} maxSize={80} className="h-full">
+          {isYouTube && transcript?.audio_url && (
+            <Panel
+              defaultSize={33}
+              maxSize={90}
+              minSize={10}
+              className="h-full"
+            >
+              <YouTubePlayer videoId={transcript?.audio_url || ""} />
+            </Panel>
+          )}
+          <div className="relative w-0">
+            <ChevronLeftIcon className="w-6 h-6 text-gray-300 absolute top-1/2 -translate-y-1/2 -left-5 pointer-events-none" />
+          </div>
+          <PanelResizeHandle className="w-2 bg-gray-200 drop-shadow-2xl cursor-column-resize z-10" />
+          <div className="relative w-0">
+            <ChevronRightIcon className="w-6 h-6 text-gray-300 absolute top-1/2 -translate-y-1/2 -right-5 pointer-events-none" />
+          </div>
+          <Panel defaultSize={34} maxSize={90} minSize={10} className="h-full">
             <TranscriptDisplay transcript={transcript} />
           </Panel>
+          <div className="relative w-0">
+            <ChevronLeftIcon className="w-6 h-6 text-gray-300 absolute top-1/2 -translate-y-1/2 -left-5 pointer-events-none" />
+          </div>
           <PanelResizeHandle className="w-2 bg-gray-200 drop-shadow-2xl cursor-column-resize z-10" />
-          <Panel defaultSize={35} maxSize={80}>
+          <div className="relative w-0">
+            <ChevronRightIcon className="w-6 h-6 text-gray-300 absolute top-1/2 -translate-y-1/2 -right-5 pointer-events-none" />
+          </div>
+          <Panel defaultSize={33} maxSize={90} minSize={5}>
             <ChatInterface transcript={transcript} />
           </Panel>
         </PanelGroup>
