@@ -22,12 +22,12 @@ export default function CopyButton({ textToCopy }: CopyButtonProps) {
   return (
     <button
       onClick={copyToClipboard}
-      className="flex items-center py-2 px-4 rounded-3xl hover:bg-gray-100 space-x-2 text-gray-600 dark:text-gray-200 hover:text-gray-600 transition duration-300"
+      className="flex items-center py-2 px-4 rounded-3xl hover:bg-gray-100/25 space-x-2 text-gray-600 dark:text-gray-200 hover:text-gray-600 transition duration-300"
     >
       {copied ? (
-        <CheckIcon className="h-6 w-6" />
+        <CheckIcon className="h-5 w-5" />
       ) : (
-        <ClipboardDocumentIcon className="h-6 w-6" />
+        <ClipboardDocumentIcon className="h-5 w-5" />
       )}
       <span className="text-sm">{copied ? "Copied!" : "Copy"}</span>
     </button>

@@ -46,7 +46,6 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <Nav />
-            {/* {children} */}
             <main className="flex-grow overflow-y-auto">{children}</main>
           </ThemeProvider>
         </body>

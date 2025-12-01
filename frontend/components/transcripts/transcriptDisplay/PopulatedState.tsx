@@ -33,11 +33,11 @@ export default function PopulatedState({ transcript }: PopulatedStateProps) {
     <div className="p-6 space-y-4">
       <div className="flex justify-start items-center gap-2">
         <CopyButton textToCopy={transcript.transcript} />
-        <ActionButton
+        {/* <ActionButton
           onClick={handleGoToMyContent}
           icon={<FolderIcon className="h-6 w-6" />}
           label="My Content"
-        />
+        /> */}
       </div>
 
       <article

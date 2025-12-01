@@ -1,8 +1,17 @@
+import Link from "next/link";
+
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import HeaderAuth from "@/components/header-auth";
 import { SparklesIcon } from "@heroicons/react/20/solid";
+import { createClient } from "@/utils/supabase/server";
+import { FolderIcon } from "lucide-react";
+export default async function Nav() {
+  const supabase = await createClient();
 
-export default function Nav() {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   return (
     <nav className="z-10">
       <div className="mx-auto px-4 sm:px-6 lg:px-8 border-b">
@@ -22,8 +31,13 @@ export default function Nav() {
             </div>
           </div>
           <div className="flex items-center gap-x-6">
+            {user && (
+              <Link href="/my-content">
+                <FolderIcon className="h-6 w-6 text-gray-400 dark:text-white" />
+              </Link>
+            )}
             <ThemeSwitcher />
-            <HeaderAuth />
+            <HeaderAuth user={user} />
           </div>
         </div>
       </div>
