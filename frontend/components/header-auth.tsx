@@ -1,16 +1,14 @@
 import { signOutAction } from "@/app/actions";
 import Link from "next/link";
 import { Button } from "./ui/button";
-// import { createClient } from "@/utils/supabase/server";
 import { CircleUser } from "lucide-react";
+import { User } from "@supabase/supabase-js";
 
-export default async function AuthButton({ user }) {
-  // const supabase = await createClient();
+interface AuthButtonProps {
+  user: User | null;
+}
 
-  // const {
-  //   data: { user },
-  // } = await supabase.auth.getUser();
-
+export default async function AuthButton({ user }: AuthButtonProps) {
   return user ? (
     <div className="relative group">
       <div className="flex items-center cursor-pointer p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 transition-all duration-200">
