@@ -24,7 +24,7 @@ export default async function Nav() {
                 className="flex items-center gap-x-1 hover:opacity-80 transition-opacity"
               >
                 <h1 className="text-xl md:text-2xl text-nowrap lg:text-3xl text-gray-400 dark:text-white">
-                  Lingo<em className="font-serif">Scribr</em> ai
+                  Lingo<em className="font-serif">Scribr</em>
                 </h1>
                 <SparklesIcon className="h-6 w-6 mb-6 text-gray-400 dark:text-white" />
               </a>
