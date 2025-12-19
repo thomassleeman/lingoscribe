@@ -7,16 +7,12 @@ import Link from "next/link";
 // import { SmtpMessage } from "../smtp-message";
 
 export default async function Signup(props: {
-  searchParams: Promise<Message>;
+  searchParams: Promise<Message & { plan?: string }>;
 }) {
   const searchParams = await props.searchParams;
-  if ("message" in searchParams) {
-    return (
-      <div className="w-full flex-1 flex items-center h-screen sm:max-w-md justify-center gap-2 p-4">
-        <FormMessage message={searchParams} />
-      </div>
-    );
-  }
+  const plan = searchParams.plan;
+
+  console.log("Sign-up page search params:", searchParams);
 
   return (
     <>
@@ -39,10 +35,35 @@ export default async function Signup(props: {
             minLength={6}
             required
           />
+          <Label htmlFor="confirmPassword">Confirm Password</Label>
+          <Input
+            type="password"
+            name="confirmPassword"
+            placeholder="Confirm your password"
+            minLength={6}
+            required
+          />
+          {plan && <input type="hidden" name="plan" value={plan} />}
           <SubmitButton formAction={signUpAction} pendingText="Signing up...">
             Sign up
           </SubmitButton>
           <FormMessage message={searchParams} />
+          {"error" in searchParams && searchParams.error?.includes("already exists") && (
+            <div className="flex flex-col gap-2 mt-2 text-sm">
+              <Link
+                href="/sign-in"
+                className="text-primary font-medium underline text-center"
+              >
+                Go to sign in
+              </Link>
+              <Link
+                href="/forgot-password"
+                className="text-muted-foreground underline text-center"
+              >
+                Forgot password?
+              </Link>
+            </div>
+          )}
         </div>
       </form>
       {/* <SmtpMessage /> */}

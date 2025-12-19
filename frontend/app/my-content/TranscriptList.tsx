@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { deleteTranscript, updateTranscript } from "@/lib/transcriptUtils";
+import { deleteTranscript, updateTranscript } from "@/lib/transcriptUtils.client";
 import { Database } from "@/types/database.types";
 import {
   TrashIcon,

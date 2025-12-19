@@ -8,35 +8,74 @@ import { redirect } from "next/navigation";
 export const signUpAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
   const password = formData.get("password")?.toString();
+  const confirmPassword = formData.get("confirmPassword")?.toString();
+  const plan = formData.get("plan")?.toString();
   const supabase = await createClient();
   const origin = (await headers()).get("origin");
 
+  console.log("signUpAction - Form data received:", {
+    email,
+    hasPassword: !!password,
+    hasConfirmPassword: !!confirmPassword,
+    passwordsMatch: password === confirmPassword,
+    plan
+  });
+
   if (!email || !password) {
+    const redirectPath = plan ? `/sign-up?plan=${plan}` : "/sign-up";
     return encodedRedirect(
       "error",
-      "/sign-up",
+      redirectPath,
       "Email and password are required"
     );
   }
 
-  const { error } = await supabase.auth.signUp({
+  if (password !== confirmPassword) {
+    const redirectPath = plan ? `/sign-up?plan=${plan}` : "/sign-up";
+    return encodedRedirect(
+      "error",
+      redirectPath,
+      "Passwords do not match"
+    );
+  }
+
+  // Build the redirect URL with plan parameter if present
+  let emailRedirectTo = `${origin}/auth/callback`;
+  if (plan) {
+    emailRedirectTo += `?redirect_to=/checkout?plan=${encodeURIComponent(plan)}`;
+  }
+
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      emailRedirectTo: `${origin}/auth/callback`,
+      emailRedirectTo,
     },
   });
 
+  console.log("signUpAction - Supabase response:", {
+    data,
+    error,
+    user: data?.user,
+    session: data?.session
+  });
+
   if (error) {
-    console.error(error.code + " " + error.message);
+    console.error("signUpAction - Error:", error.code, error.message);
     return encodedRedirect("error", "/sign-up", error.message);
-  } else {
+  }
+
+  // Check if user already exists (Supabase returns success but with identities: [])
+  if (data?.user && data.user.identities && data.user.identities.length === 0) {
+    console.log("signUpAction - User already exists, identities empty");
     return encodedRedirect(
-      "success",
+      "error",
       "/sign-up",
-      "Thanks for signing up! Please check your email for a verification link."
+      "An account with this email already exists. Please sign in or reset your password."
     );
   }
+
+  return redirect("/sign-up/check-your-email");
 };
 
 export const signInAction = async (formData: FormData) => {
@@ -60,7 +99,6 @@ export const forgotPasswordAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
   const supabase = await createClient();
   const origin = (await headers()).get("origin");
-  const callbackUrl = formData.get("callbackUrl")?.toString();
 
   if (!email) {
     return encodedRedirect("error", "/forgot-password", "Email is required");
@@ -77,10 +115,6 @@ export const forgotPasswordAction = async (formData: FormData) => {
       "/forgot-password",
       "Could not reset password"
     );
-  }
-
-  if (callbackUrl) {
-    return redirect(callbackUrl);
   }
 
   return encodedRedirect(

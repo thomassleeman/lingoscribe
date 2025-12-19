@@ -73,8 +73,8 @@ export function PricingCards({ isLoggedIn }: PricingCardsProps) {
 
   const handleSelectPlan = async (lookupKey: string) => {
     if (!isLoggedIn) {
-      // Redirect to sign up with return URL
-      router.push(`/sign-up?redirect=/pricing&plan=${lookupKey}`);
+      // Redirect to sign up with plan parameter
+      router.push(`/sign-up?plan=${lookupKey}`);
       return;
     }
 

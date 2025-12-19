@@ -96,10 +96,17 @@ export async function POST(request: NextRequest) {
 
 async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
   console.log("Processing checkout.session.completed");
+  console.log("Session ID:", session.id);
+  console.log("Session status:", session.status);
+  console.log("Payment status:", session.payment_status);
 
   const userId = session.metadata?.supabase_user_id;
   const customerId = session.customer as string;
   const subscriptionId = session.subscription as string;
+
+  console.log("User ID:", userId);
+  console.log("Customer ID:", customerId);
+  console.log("Subscription ID:", subscriptionId);
 
   if (!userId) {
     console.error("No supabase_user_id in session metadata");
@@ -111,11 +118,51 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
     expand: ["items.data.price"],
   });
 
+  // Type assertion to access period properties
+  const sub = subscription as any;
+
+  console.log("Retrieved subscription status:", subscription.status);
+  console.log("🔍 Full subscription object keys:", Object.keys(subscription));
+  console.log("🔍 Subscription object sample:", {
+    id: subscription.id,
+    status: subscription.status,
+    created: (subscription as any).created,
+    current_period_start: sub.current_period_start,
+    current_period_end: sub.current_period_end,
+    billing_cycle_anchor: sub.billing_cycle_anchor,
+  });
+  console.log("Subscription period start:", sub.current_period_start);
+  console.log("Subscription period end:", sub.current_period_end);
+  console.log(
+    "Subscription start timestamp (ISO):",
+    sub.current_period_start
+      ? new Date(sub.current_period_start * 1000).toISOString()
+      : "NULL"
+  );
+  console.log(
+    "Subscription end timestamp (ISO):",
+    sub.current_period_end
+      ? new Date(sub.current_period_end * 1000).toISOString()
+      : "NULL"
+  );
+
   await upsertSubscription(userId, customerId, subscription);
 }
 
 async function handleSubscriptionChange(subscription: Stripe.Subscription) {
   console.log(`Processing subscription ${subscription.status}`);
+
+  // Debug: Check what fields are in the subscription from webhook
+  const sub = subscription as any;
+  console.log("🔍 Webhook subscription keys:", Object.keys(subscription));
+  console.log("🔍 Webhook subscription sample:", {
+    id: subscription.id,
+    status: subscription.status,
+    created: sub.created,
+    current_period_start: sub.current_period_start,
+    current_period_end: sub.current_period_end,
+    billing_cycle_anchor: sub.billing_cycle_anchor,
+  });
 
   const userId = subscription.metadata?.supabase_user_id;
   const customerId = subscription.customer as string;
@@ -162,7 +209,8 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
   console.log("Processing invoice.paid");
 
   // This handles subscription renewals
-  const subscriptionId = invoice.subscription as string;
+  const inv = invoice as any;
+  const subscriptionId = inv.subscription as string;
 
   if (!subscriptionId) {
     console.log("Invoice not related to subscription");
@@ -225,7 +273,8 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
 async function handlePaymentFailed(invoice: Stripe.Invoice) {
   console.log("Processing invoice.payment_failed");
 
-  const subscriptionId = invoice.subscription as string;
+  const inv = invoice as any;
+  const subscriptionId = inv.subscription as string;
 
   if (!subscriptionId) {
     return;
@@ -254,6 +303,9 @@ async function upsertSubscription(
   customerId: string,
   subscription: Stripe.Subscription
 ) {
+  // Type assertion for period properties
+  const sub = subscription as any;
+
   // Get the price and determine plan details
   const priceItem = subscription.items.data[0];
   const price = priceItem.price;
@@ -271,6 +323,38 @@ async function upsertSubscription(
     };
   }
 
+  // Calculate period dates from billing_cycle_anchor
+  // In Stripe API 2025-11-17.clover, current_period_start/end were removed
+  // Use billing_cycle_anchor and interval to calculate period dates
+  let periodStart: string | null = null;
+  let periodEnd: string | null = null;
+
+  if (sub.billing_cycle_anchor) {
+    const anchorDate = new Date(sub.billing_cycle_anchor * 1000);
+    periodStart = anchorDate.toISOString();
+
+    // Calculate period end based on billing interval
+    const endDate = new Date(anchorDate);
+    if (planDetails.interval === "year") {
+      endDate.setFullYear(endDate.getFullYear() + 1);
+    } else {
+      // month
+      endDate.setMonth(endDate.getMonth() + 1);
+    }
+    periodEnd = endDate.toISOString();
+
+    console.log("✅ Calculated period from billing_cycle_anchor:", {
+      anchor: sub.billing_cycle_anchor,
+      periodStart,
+      periodEnd,
+      interval: planDetails.interval,
+    });
+  } else {
+    console.log(
+      `⚠️ Subscription ${subscription.id} has no billing_cycle_anchor`
+    );
+  }
+
   const subscriptionData = {
     user_id: userId,
     stripe_customer_id: customerId,
@@ -280,15 +364,17 @@ async function upsertSubscription(
     plan_name: planDetails.plan,
     billing_interval: planDetails.interval,
     minutes_limit: planDetails.minutesLimit,
-    current_period_start: new Date(
-      subscription.current_period_start * 1000
-    ).toISOString(),
-    current_period_end: new Date(
-      subscription.current_period_end * 1000
-    ).toISOString(),
+    current_period_start: periodStart,
+    current_period_end: periodEnd,
     cancel_at_period_end: subscription.cancel_at_period_end,
     updated_at: new Date().toISOString(),
   };
+
+  console.log("📝 About to upsert subscription with data:", {
+    ...subscriptionData,
+    current_period_start: subscriptionData.current_period_start || "NULL",
+    current_period_end: subscriptionData.current_period_end || "NULL",
+  });
 
   // Upsert subscription
   const { data: upsertedSub, error: subError } = await supabaseAdmin
@@ -304,15 +390,19 @@ async function upsertSubscription(
     throw subError;
   }
 
-  console.log("Upserted subscription:", upsertedSub.id);
+  console.log("✅ Upserted subscription:", upsertedSub.id);
 
   // Create usage period if this is a new/renewed subscription
-  if (subscription.status === "active") {
+  if (
+    subscription.status === "active" &&
+    sub.current_period_start &&
+    sub.current_period_end
+  ) {
     await ensureUsagePeriod(
       userId,
       upsertedSub.id,
-      new Date(subscription.current_period_start * 1000),
-      new Date(subscription.current_period_end * 1000),
+      new Date(sub.current_period_start * 1000),
+      new Date(sub.current_period_end * 1000),
       planDetails.minutesLimit
     );
   }

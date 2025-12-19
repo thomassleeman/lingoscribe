@@ -15,6 +15,9 @@ export default async function AuthButton({ user }: AuthButtonProps) {
         <CircleUser size={28} className="text-gray-500 dark:text-gray-100" />
       </div>
       <div className="absolute z-50 right-0 mt-2 w-48 bg-white dark:bg-slate-800 dark:text-gray-100 rounded-md shadow-lg border border-gray-200 overflow-hidden invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200">
+        <Button variant="ghost" className="w-full text-left px-4 py-2 text-sm">
+          <Link href="/settings/billing">Subscription</Link>
+        </Button>
         <form action={signOutAction} className="py-1">
           <Button
             type="submit"

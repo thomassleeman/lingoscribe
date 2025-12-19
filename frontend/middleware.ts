@@ -96,7 +96,7 @@ export async function middleware(request: NextRequest) {
 
   // Redirect authenticated users from auth routes
   if (isAuthRoute && user) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    return NextResponse.redirect(new URL("/my-content", request.url));
   }
 
   // Check subscription for routes that require it

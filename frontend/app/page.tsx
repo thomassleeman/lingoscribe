@@ -1,26 +1,14 @@
-// import Hero from "@/components/hero";
-// import ConnectSupabaseSteps from "@/components/tutorial/connect-supabase-steps";
-// import SignUpUserSteps from "@/components/tutorial/sign-up-user-steps";
-// import { hasEnvVars } from "@/utils/supabase/check-env-vars";
-
-// export default async function Home() {
-//   return (
-//     <>
-//       {/* <Hero /> */}
-//       <main className="flex-1 flex flex-col gap-6 px-4">
-//         <h2 className="font-medium text-xl mb-4">Next steps</h2>
-//         {hasEnvVars ? <SignUpUserSteps /> : <ConnectSupabaseSteps />}
-//       </main>
-//     </>
-//   );
-// }
-
 import Link from "next/link";
-// import GetStartedButton from "./components/GetStartedButton";
 
 export default function Home() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen px-4 py-12 text-center">
+      <Link
+        href="/pricing"
+        className="mb-8 inline-block font-semibold px-6 py-3"
+      >
+        Pricing
+      </Link>
       <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
         <span className="block text-gray-900 dark:text-white">
           Transcribe, Analyze, and
@@ -35,10 +23,6 @@ export default function Home() {
         questions, summarize content, and extract insights from your media
         files.
       </p>
-
-      {/* <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-        <GetStartedButton />
-      </div> */}
 
       <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
         <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">

@@ -12,6 +12,8 @@ export default async function Nav() {
     data: { user },
   } = await supabase.auth.getUser();
 
+  const ICON_SIZE = 16;
+
   return (
     <nav className="z-10">
       <div className="mx-auto px-4 sm:px-6 lg:px-8 border-b">
@@ -20,7 +22,7 @@ export default async function Nav() {
             <div className="-ml-2 mr-2 flex items-center md:hidden"></div>
             <div className="flex items-center gap-x-1">
               <a
-                href="/"
+                href={user ? "/my-content" : "/"}
                 className="flex items-center gap-x-1 hover:opacity-80 transition-opacity"
               >
                 <h1 className="text-xl md:text-2xl text-nowrap lg:text-3xl text-gray-400 dark:text-white">
@@ -33,7 +35,10 @@ export default async function Nav() {
           <div className="flex items-center gap-x-6">
             {user && (
               <Link href="/my-content">
-                <FolderIcon className="h-6 w-6 text-gray-400 dark:text-white" />
+                <FolderIcon
+                  size={ICON_SIZE}
+                  className="text-muted-foreground"
+                />
               </Link>
             )}
             <ThemeSwitcher />

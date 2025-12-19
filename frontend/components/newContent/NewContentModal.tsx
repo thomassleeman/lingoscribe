@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { saveTranscript } from "@/lib/transcriptUtils";
+import { saveTranscript } from "@/lib/transcriptUtils.client";
 import FileUpload from "./FileUpload";
 import YouTubeTranscriber from "./YouTubeTranscriber";
 import PasteInText from "./PasteInText";

@@ -12,5 +12,6 @@ export function encodedRedirect(
   path: string,
   message: string,
 ) {
-  return redirect(`${path}?${type}=${encodeURIComponent(message)}`);
+  const separator = path.includes("?") ? "&" : "?";
+  return redirect(`${path}${separator}${type}=${encodeURIComponent(message)}`);
 }

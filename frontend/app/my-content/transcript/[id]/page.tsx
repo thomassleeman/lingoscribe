@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Dashboard from "@/components/transcripts/Dashboard";
 import { useParams } from "next/navigation";
-import { getTranscriptById } from "@/lib/transcriptUtils";
+import { getTranscriptById } from "@/lib/transcriptUtils.client";
 import type { Database } from "@/types/database.types";
 
 type Transcript = Database["public"]["Tables"]["transcripts"]["Row"];

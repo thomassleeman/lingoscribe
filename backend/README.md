@@ -1,7 +1,7 @@
 ## Set up the backend
 
 1. Navigate to the Project
-   cd /path/to/media-transcriber/backend
+   cd documents/projects/lingoscribe/backend
 
 2. Activate the Virtual Environment
    source venv/bin/activate

@@ -1,7 +1,7 @@
 
 from fastapi import APIRouter, UploadFile, File, HTTPException, Form
-from .youtube_transcript_service import process_youtube_video  # NEW: Import new service
-from .whisper_service import transcribe_audio  # Keep for audio file uploads
+from .youtube_transcript_service import process_youtube_video  
+from .whisper_service import transcribe_audio  # for audio file uploads
 from .utils import save_uploaded_file
 import os
 from openai import OpenAI

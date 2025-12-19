@@ -71,6 +71,7 @@ export interface SubscriptionWithUsage extends Subscription {
     minutes_limit: number;
     minutes_remaining: number;
     percent_used: number;
+    period_start: string;
     period_end: string;
   } | null;
 }

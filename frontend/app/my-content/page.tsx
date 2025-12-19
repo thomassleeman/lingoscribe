@@ -1,7 +1,7 @@
 import { FolderIcon, TrashIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
-import { getTranscripts, deleteTranscript } from "@/lib/transcriptUtils";
+import { getTranscripts } from "@/lib/transcriptUtils.server";
 import NewContentModal from "@/components/newContent/NewContentModal";
 import { Database } from "@/types/database.types";
 import TranscriptList from "./TranscriptList";
